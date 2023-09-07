@@ -1,1 +1,1 @@
-# Simple Powergrid + Bootstrap 5 simple example
+# Simple PowerGrid + Bootstrap 5 simple example
