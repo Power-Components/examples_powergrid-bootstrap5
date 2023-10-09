@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Powergrid - Bootstrap 5 Example</title>
+        <title>PowerGrid - Bootstrap 5 Example</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -17,5 +17,4 @@
     <body class="p-5">
         <livewire:user-table />
     </body>
-    @livewireScripts
 </html>
