@@ -3,20 +3,20 @@
 namespace App\Livewire;
 
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
-use PowerComponents\LivewirePowerGrid\{Button,
-    Column,
-    Components\Rules\RuleActions,
-    Detail,
-    Exportable,
-    Facades\Filter,
-    Footer,
-    Header,
-    PowerGrid,
-    PowerGridColumns,
-    PowerGridComponent,
-    Traits\WithExport};
+use Illuminate\Database\Eloquent\Builder;
+use PowerComponents\LivewirePowerGrid\Button;
+use PowerComponents\LivewirePowerGrid\Column;
+use PowerComponents\LivewirePowerGrid\Detail;
+use PowerComponents\LivewirePowerGrid\Footer;
+use PowerComponents\LivewirePowerGrid\Header;
+use PowerComponents\LivewirePowerGrid\PowerGrid;
+use PowerComponents\LivewirePowerGrid\Exportable;
+use PowerComponents\LivewirePowerGrid\Facades\Rule;
+use PowerComponents\LivewirePowerGrid\Facades\Filter;
+use PowerComponents\LivewirePowerGrid\PowerGridFields;
+use PowerComponents\LivewirePowerGrid\Traits\WithExport;
+use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 
 final class UserTable extends PowerGridComponent
 {
@@ -28,20 +28,6 @@ final class UserTable extends PowerGridComponent
         'email.*' => ['required', 'email'],
     ];
 
-    public function onUpdatedEditable($id, $field, $value): void
-    {
-        User::query()->find($id)->update([
-            $field => $value,
-        ]);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    |  Features Setup
-    |--------------------------------------------------------------------------
-    | Setup Table's general features
-    |
-    */
     public function setUp(): array
     {
         $this->showCheckBox();
@@ -63,68 +49,32 @@ final class UserTable extends PowerGridComponent
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    |  Datasource
-    |--------------------------------------------------------------------------
-    | Provides data to your Table using a Model or Collection
-    |
-    */
+    protected function queryString()
+    {
+        return $this->powerGridQueryString('user');
+    }
 
-    /**
-     * PowerGrid datasource.
-     *
-     * @return Builder<\App\Models\User>
-     */
     public function datasource(): Builder
     {
         return User::query();
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    |  Add Column
-    |--------------------------------------------------------------------------
-    | Make Datasource fields available to be used as columns.
-    | You can pass a closure to transform/modify the data.
-    |
-    | ❗ IMPORTANT: When using closures, you must escape any value coming from
-    |    the database using the `e()` Laravel Helper function.
-    |
-    */
-    public function addColumns(): PowerGridColumns
+    public function fields(): PowerGridFields
     {
-        return PowerGrid::columns()
-            ->addColumn('id')
-            ->addColumn('name')
-
-           /** Example of custom column using a closure **/
-            ->addColumn('name_lower', function (User $model) {
-                return strtolower(e($model->name));
-            })
-
-            ->addColumn('email')
-            ->addColumn('created_at_formatted', fn (User $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
+        return PowerGrid::fields()
+            ->add('id')
+            ->add('name')
+            ->add('email')
+            ->add('created_at')
+            ->add('created_at_formatted', fn (User $model) => Carbon::parse($model->created_at)->format('d/m/Y H:i:s'));
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    |  Include Columns
-    |--------------------------------------------------------------------------
-    | Include the columns added columns, making them visible on the Table.
-    | Each column can be configured with properties, filters, actions...
-    |
-    */
-
-     /**
-      * PowerGrid Columns.
-      *
-      * @return array<int, Column>
-      */
     public function columns(): array
     {
         return [
-            Column::make('Id', 'id'),
+            Column::make('ID', 'id')
+                 ->sortable(),
+
             Column::make('Full Name', 'name')
                 ->sortable()
                 ->searchable(),
@@ -139,17 +89,12 @@ final class UserTable extends PowerGridComponent
                 ->sortable(),
 
             Column::make('UPDATED AT', 'updated_at_formatted', 'updated_at')
-                ->searchable()
-                ->sortable(),
+                ->searchable(),
 
+            Column::action('Action')
         ];
     }
 
-    /**
-     * PowerGrid Filters.
-     *
-     * @return array<int, Filter>
-     */
     public function filters(): array
     {
         return [
@@ -159,60 +104,39 @@ final class UserTable extends PowerGridComponent
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Actions Method
-    |--------------------------------------------------------------------------
-    | Enable the method below only if the Routes below are defined in your app.
-    |
-    */
-
-    /**
-     * PowerGrid User Action Buttons.
-     *
-     * @return array<int, Button>
-     */
-
-    /*
-    public function actions(): array
+    #[\Livewire\Attributes\On('edit')]
+    public function edit($rowId): void
     {
-       return [
-           Button::make('edit', 'Edit')
-               ->class('bg-indigo-500 cursor-pointer text-white px-3 py-2.5 m-1 rounded text-sm')
-               ->route('user.edit', ['user' => 'id']),
-
-           Button::make('destroy', 'Delete')
-               ->class('bg-red-500 cursor-pointer text-white px-3 py-2 m-1 rounded text-sm')
-               ->route('user.destroy', ['user' => 'id'])
-               ->method('delete')
-        ];
+        $this->js('alert('.$rowId.')');
     }
-    */
 
-    /*
-    |--------------------------------------------------------------------------
-    | Actions Rules
-    |--------------------------------------------------------------------------
-    | Enable the method below to configure Rules for your Table and Action Buttons.
-    |
-    */
-
-    /**
-     * PowerGrid User Action Rules.
-     *
-     * @return array<int, RuleActions>
-     */
-
-    /*
-    public function actionRules(): array
+    public function actions(User $row): array
     {
-       return [
+        return [
+            Button::make('edit', 'Edit')
+                ->class('btn btn-primary')
+                ->route('user.edit', ['user' => 'id']),
 
-           //Hide button edit for ID 1
-            Rule::button('edit')
-                ->when(fn($user) => $user->id === 1)
-                ->hide(),
-        ];
+            Button::make('destroy', 'Delete')
+                ->class('btn btn-danger')
+                ->route('user.destroy', ['user' => 'id'])
+                ->method('delete')
+         ];
     }
-    */
+
+    public function actionRules(User $row): array
+    {
+        return [
+             Rule::button('edit')
+                 ->when(fn ($row) => $row->id === 1)
+                 ->hide(),
+         ];
+    }
+
+    public function onUpdatedEditable($id, $field, $value): void
+    {
+        User::query()->find($id)->update([
+            $field => $value,
+        ]);
+    }
 }

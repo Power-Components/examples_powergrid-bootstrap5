@@ -16,3 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+
+Route::get('/user/edit', fn () => 'editing...')->name('user.edit');
+
+Route::delete('/user/destroy', fn () => 'destroying...')->name('user.destroy');

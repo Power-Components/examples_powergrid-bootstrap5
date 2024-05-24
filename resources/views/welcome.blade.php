@@ -10,11 +10,15 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
 
-        @vite(['resources/js/app.js'])
+        @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
         @livewireStyles
     </head>
-    <body class="p-5">
-        <livewire:user-table />
-    </body>
+    <body>
+    <main class="px-3">
+        <div class="container">
+            <livewire:user-table />
+        </div>
+    </main>
+  </body>
 </html>
